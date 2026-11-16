@@ -71,6 +71,10 @@ On a later request, reuse the confirmed definition when still applicable, resolv
 3. Add tests for the acceptance gates before broad rollout.
 4. Expand adapters only after the first integration passes.
 
+## Project scopes
+
+Per-project scopes live in [`projects/`](projects/README.md). Rules are shared; memory is isolated per project.
+
 ## Current status
 
 This repository currently defines the foundation only. No memory database, retrieval service, source connector, model adapter, runtime enforcement, or automated test suite is implemented by these documents. No external agent is connected automatically. Technology choices remain open until the intended runtime and deployment constraints are confirmed.
