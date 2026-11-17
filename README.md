@@ -1,6 +1,10 @@
+<p align="center">
+  <img src="assets/logo/beast-modell-banner.png" alt="Beast-ModeLL logo: never guess, always verify" width="100%">
+</p>
+
 # Beast-ModeLL
 
-Golden Rulez. Verified evidence. Durable context. Fresh answers.
+<p align="center"><b>Golden Rulez. Verified evidence. Durable context. Fresh answers.</b></p>
 
 ## Mission
 
