@@ -2,6 +2,7 @@ import random, traceback
 from gi.repository import Gimp, Gegl, Gio
 LOG=lambda *a: open("./out.txt","a").write(" ".join(map(str,a))+"\n")
 random.seed(7)
+GOLD="#d4a017"; GOLD_HI="#ffd95a"; GOLD_LO="#a8780a"
 try:
     W,H=2000,1000
     img=Gimp.Image.new(W,H,Gimp.ImageBaseType.RGB)
@@ -58,23 +59,55 @@ try:
     m=text("M","Rubik Wet Paint Regular",S,"#0a0a0a",0,0)
     o=text("O","Rubik Wet Paint Regular",S,"#0a0a0a",0,0)
     de=text("DE","Rubik Wet Paint Regular",S,"#0a0a0a",0,0)
-    ll=text("L","Rubik Wet Paint Regular",S,"#e10600",0,0)
-    ll2=text("L","Rubik Wet Paint Regular",S,"#e10600",0,0)
+    ll=text("L","Rubik Wet Paint Regular",S,GOLD,0,0)
+    ll2=text("L","Rubik Wet Paint Regular",S,GOLD,0,0)
     gap=-18
     total=m.get_width()+o.get_width()+de.get_width()+ll.get_width()+ll2.get_width()+4*gap
     x=(W-total)//2+40; y=150+int(S*0.92)
     for t in (m,o,de,ll,ll2):
         t.set_offsets(x,y); x+=t.get_width()+gap
+    for t in (ll,ll2):
+        gl=newlayer("Gold "+t.get_name(),0)
+        img.select_item(Gimp.ChannelOps.REPLACE,t)
+        try:
+            Gimp.context_set_foreground(C(GOLD_HI)); Gimp.context_set_background(C(GOLD_LO))
+            Gimp.context_set_gradient_fg_bg_rgb()
+            ty=t.get_offsets()[2]
+            gl.edit_gradient_fill(Gimp.GradientType.LINEAR,0,False,1,0.0,True,0,ty+40,0,ty+t.get_height()-20)
+        except Exception as e:
+            LOG("gradient fail",e); fill(gl,GOLD)
+        Gimp.Selection.none(img)
     LOG("sizes",beast.get_width(),beast.get_height(),m.get_width(),o.get_width(),de.get_width(),ll.get_width(),"y2",y)
-    # paw over the O
+    # Wolverine-style claw print over the O: three parallel tapered gold slashes
     ox,oy=o.get_offsets()[1:]; ow,oh=o.get_width(),o.get_height()
-    paw=newlayer("Paw",0)
+    paw=newlayer("Claw print",0)
     cx,cy=ox+ow/2, oy+oh*0.55; r=min(ow,oh)*0.36
     ell(paw,cx-r,cy-r,2*r,2*r,"#0a0a0a")
-    pr=r*0.62
-    ell(paw,cx-pr*0.62,cy-pr*0.05,pr*1.24,pr*1.0,"#ffffff")
-    for dx,dy in ((-0.78,-0.55),(-0.28,-0.95),(0.28,-0.95),(0.78,-0.55)):
-        tw=pr*0.42; ell(paw,cx+dx*pr-tw/2,cy+dy*pr-tw*0.6,tw,tw*1.2,"#ffffff")
+    import math
+    ang=math.radians(-62)              # slash direction (lower-left to upper-right)
+    ux,uy=math.cos(ang),math.sin(ang); nx,ny=-uy,ux
+    L=r*1.9; sp=r*0.5; wmax=r*0.21
+    for k in (-1,0,1):
+        mx,my=cx+nx*sp*k, cy+ny*sp*k
+        half=L*(0.5 if k==0 else 0.44)
+        pts=[]
+        steps=12
+        for i in range(steps+1):
+            t=-1+2*i/steps; w=wmax*(1-t*t)**0.8*(1.0 if k==0 else 0.9)
+            pts+= [mx+ux*half*t+nx*w, my+uy*half*t+ny*w]
+        for i in range(steps,-1,-1):
+            t=-1+2*i/steps; w=wmax*(1-t*t)**0.8*(1.0 if k==0 else 0.9)*0.35
+            pts+= [mx+ux*half*t-nx*w, my+uy*half*t-ny*w]
+        poly(paw,pts,GOLD_HI)
+        # darker gold shading on the trailing edge
+        sh=[]
+        for i in range(steps+1):
+            t=-1+2*i/steps; w=wmax*(1-t*t)**0.8*0.35
+            sh+= [mx+ux*half*t+nx*w*0.2, my+uy*half*t+ny*w*0.2]
+        for i in range(steps,-1,-1):
+            t=-1+2*i/steps; w=wmax*(1-t*t)**0.8*0.35
+            sh+= [mx+ux*half*t-nx*w, my+uy*half*t-ny*w]
+        poly(paw,sh,GOLD_LO)
     # grid lines behind letters (slanted)
     gx0,gy0,gx1,gy1=bx-20,170,bx+beast.get_width()+60,y+m.get_height()-40
     for i in range(0,9):
@@ -88,8 +121,8 @@ try:
         for k in range(n):
             ox_=x0+k*34; oy_=y0+k*20
             poly(scratch,[ox_,oy_,ox_+dx,oy_+dy,ox_+dx+8,oy_+dy-14,ox_+14,oy_-4],c)
-    claw(gx1-120,200,200,-70,3,"#e10600")
-    claw(gx0-90,y+m.get_height()-60,200,-60,3,"#e10600")
+    claw(gx1-120,200,200,-70,3,GOLD)
+    claw(gx0-90,y+m.get_height()-60,200,-60,3,GOLD)
     # splatter dots
     for _ in range(70):
         sx=random.randint(gx0-80,gx1+80); sy=random.randint(120,y+m.get_height())
@@ -112,7 +145,7 @@ try:
     fill(sticker,"#ffffff")
     Gimp.Selection.grow(img,8)
     outline=newlayer("Sticker outline",len(art_layers)+2)
-    fill(outline,"#e10600")
+    fill(outline,GOLD)
     Gimp.Selection.grow(img,4)
     shadow=newlayer("Shadow",len(art_layers)+3)
     fill(shadow,"#000000"); Gimp.Selection.none(img)
