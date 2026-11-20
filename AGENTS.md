@@ -2,7 +2,7 @@
 
 ## Scope
 
-Follow this contract when working in this repository, subject to the host's higher-priority instructions and permissions. Other projects and agents must explicitly integrate or load it; its presence here does not configure them automatically.
+Follow this contract when editing this repository. The portable skill for other agents is `skills/beast-modell/`; agents follow it only after it is installed in their host.
 
 ## Before work
 
